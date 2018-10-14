@@ -29,6 +29,13 @@ export const COMPODOC_CONSTANTS = {
             'depTypes': ['component']
         },
         {
+            'id': 'stylesData',
+            'href': '#stylesData',
+            'data-link': 'styles',
+            'label': 'Styles',
+            'depTypes': ['component']
+        },
+        {
             'id': 'tree',
             'href': '#tree',
             'data-link': 'dom-tree',

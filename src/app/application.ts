@@ -137,7 +137,9 @@ export class Application {
         if (this.configuration.mainData.exportFormat !== COMPODOC_DEFAULTS.exportFormat) {
             this.processPackageJson();
         } else {
-            this.htmlEngine.init(this.configuration.mainData.templates).then(() => this.processPackageJson());
+            this.htmlEngine
+                .init(this.configuration.mainData.templates)
+                .then(() => this.processPackageJson());
         }
         return generationPromise;
     }
@@ -458,7 +460,7 @@ export class Application {
                 result = true;
             } else {
                 let countJSFiles = 0;
-                this.files.forEach((file) => {
+                this.files.forEach(file => {
                     if (path.extname(file) === '.js') {
                         countJSFiles += 1;
                     }
@@ -707,11 +709,11 @@ export class Application {
             });
         }
 
-				if (this.configuration.mainData.unitTestCoverage !== ''){
-					actions.push(()=>{
-						return this.prepareUnitTestCoverage();
-					});
-				}
+        if (this.configuration.mainData.unitTestCoverage !== '') {
+            actions.push(() => {
+                return this.prepareUnitTestCoverage();
+            });
+        }
 
         if (this.configuration.mainData.includes !== '') {
             actions.push(() => {
@@ -854,93 +856,107 @@ export class Application {
                     injectables: [],
                     pipes: []
                 };
-                ['declarations', 'bootstrap', 'imports', 'exports', 'controllers'].forEach(metadataType => {
-                    ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
-                        switch (metaDataItem.type) {
-                            case 'directive':
-                                return this.dependenciesEngine.getDirectives().some(directive => {
-                                    let selectedDirective;
-                                    if (typeof metaDataItem.id !== 'undefined') {
-                                        selectedDirective =
-                                            (directive as any).id === metaDataItem.id;
-                                    } else {
-                                        selectedDirective =
-                                            (directive as any).name === metaDataItem.name;
-                                    }
-                                    if (
-                                        selectedDirective &&
-                                        !ngModule.compodocLinks.directives.includes(directive)
-                                    ) {
-                                        ngModule.compodocLinks.directives.push(directive);
-                                    }
-                                    return selectedDirective;
-                                });
+                ['declarations', 'bootstrap', 'imports', 'exports', 'controllers'].forEach(
+                    metadataType => {
+                        ngModule[metadataType] = ngModule[metadataType].filter(metaDataItem => {
+                            switch (metaDataItem.type) {
+                                case 'directive':
+                                    return this.dependenciesEngine
+                                        .getDirectives()
+                                        .some(directive => {
+                                            let selectedDirective;
+                                            if (typeof metaDataItem.id !== 'undefined') {
+                                                selectedDirective =
+                                                    (directive as any).id === metaDataItem.id;
+                                            } else {
+                                                selectedDirective =
+                                                    (directive as any).name === metaDataItem.name;
+                                            }
+                                            if (
+                                                selectedDirective &&
+                                                !ngModule.compodocLinks.directives.includes(
+                                                    directive
+                                                )
+                                            ) {
+                                                ngModule.compodocLinks.directives.push(directive);
+                                            }
+                                            return selectedDirective;
+                                        });
 
-                            case 'component':
-                                return this.dependenciesEngine.getComponents().some(component => {
-                                    let selectedComponent;
-                                    if (typeof metaDataItem.id !== 'undefined') {
-                                        selectedComponent =
-                                            (component as any).id === metaDataItem.id;
-                                    } else {
-                                        selectedComponent =
-                                            (component as any).name === metaDataItem.name;
-                                    }
-                                    if (
-                                        selectedComponent &&
-                                        !ngModule.compodocLinks.components.includes(component)
-                                    ) {
-                                        ngModule.compodocLinks.components.push(component);
-                                    }
-                                    return selectedComponent;
-                                });
+                                case 'component':
+                                    return this.dependenciesEngine
+                                        .getComponents()
+                                        .some(component => {
+                                            let selectedComponent;
+                                            if (typeof metaDataItem.id !== 'undefined') {
+                                                selectedComponent =
+                                                    (component as any).id === metaDataItem.id;
+                                            } else {
+                                                selectedComponent =
+                                                    (component as any).name === metaDataItem.name;
+                                            }
+                                            if (
+                                                selectedComponent &&
+                                                !ngModule.compodocLinks.components.includes(
+                                                    component
+                                                )
+                                            ) {
+                                                ngModule.compodocLinks.components.push(component);
+                                            }
+                                            return selectedComponent;
+                                        });
 
-                            case 'controller':
-                                return this.dependenciesEngine.getControllers().some(controller => {
-                                    let selectedController;
-                                    if (typeof metaDataItem.id !== 'undefined') {
-                                        selectedController =
-                                            (controller as any).id === metaDataItem.id;
-                                    } else {
-                                        selectedController =
-                                            (controller as any).name === metaDataItem.name;
-                                    }
-                                    if (
-                                        selectedController &&
-                                        !ngModule.compodocLinks.controllers.includes(controller)
-                                    ) {
-                                        ngModule.compodocLinks.controllers.push(controller);
-                                    }
-                                    return selectedController;
-                                });
+                                case 'controller':
+                                    return this.dependenciesEngine
+                                        .getControllers()
+                                        .some(controller => {
+                                            let selectedController;
+                                            if (typeof metaDataItem.id !== 'undefined') {
+                                                selectedController =
+                                                    (controller as any).id === metaDataItem.id;
+                                            } else {
+                                                selectedController =
+                                                    (controller as any).name === metaDataItem.name;
+                                            }
+                                            if (
+                                                selectedController &&
+                                                !ngModule.compodocLinks.controllers.includes(
+                                                    controller
+                                                )
+                                            ) {
+                                                ngModule.compodocLinks.controllers.push(controller);
+                                            }
+                                            return selectedController;
+                                        });
 
-                            case 'module':
-                                return this.dependenciesEngine
-                                    .getModules()
-                                    .some(module => (module as any).name === metaDataItem.name);
+                                case 'module':
+                                    return this.dependenciesEngine
+                                        .getModules()
+                                        .some(module => (module as any).name === metaDataItem.name);
 
-                            case 'pipe':
-                                return this.dependenciesEngine.getPipes().some(pipe => {
-                                    let selectedPipe;
-                                    if (typeof metaDataItem.id !== 'undefined') {
-                                        selectedPipe = (pipe as any).id === metaDataItem.id;
-                                    } else {
-                                        selectedPipe = (pipe as any).name === metaDataItem.name;
-                                    }
-                                    if (
-                                        selectedPipe &&
-                                        !ngModule.compodocLinks.pipes.includes(pipe)
-                                    ) {
-                                        ngModule.compodocLinks.pipes.push(pipe);
-                                    }
-                                    return selectedPipe;
-                                });
+                                case 'pipe':
+                                    return this.dependenciesEngine.getPipes().some(pipe => {
+                                        let selectedPipe;
+                                        if (typeof metaDataItem.id !== 'undefined') {
+                                            selectedPipe = (pipe as any).id === metaDataItem.id;
+                                        } else {
+                                            selectedPipe = (pipe as any).name === metaDataItem.name;
+                                        }
+                                        if (
+                                            selectedPipe &&
+                                            !ngModule.compodocLinks.pipes.includes(pipe)
+                                        ) {
+                                            ngModule.compodocLinks.pipes.push(pipe);
+                                        }
+                                        return selectedPipe;
+                                    });
 
-                            default:
-                                return true;
-                        }
-                    });
-                });
+                                default:
+                                    return true;
+                            }
+                        });
+                    }
+                );
                 ngModule.providers = ngModule.providers.filter(provider => {
                     return (
                         this.dependenciesEngine.getInjectables().some(injectable => {
@@ -1239,16 +1255,70 @@ export class Application {
         );
     }
 
+    private handleStyles(component): Promise<any> {
+        let styles = component.styles;
+        component.stylesData = '';
+
+        return new Promise((resolveStyles, rejectStyles) => {
+            styles.forEach(style => {
+                component.stylesData = component.stylesData + style + '\n';
+            });
+            resolveStyles();
+        });
+    }
+
+    private handleStyleurls(component): Promise<any> {
+        let dirname = path.dirname(component.file);
+        let styleUrls = component.styleUrls;
+        component.styleUrlsData = '';
+
+        return new Promise((resolveStyleUrls, rejectStyleUrls) => {
+            const styleUrlsLength = styleUrls.length;
+            let i = 0;
+
+            const loopStyleUrls = () => {
+                if (i < styleUrlsLength) {
+                    let styleUrl = path.resolve(dirname + path.sep + styleUrls[i]);
+                    if (!this.fileEngine.existsSync(styleUrl)) {
+                        let err = `Cannot read style url ${styleUrl} for ${component.name}`;
+                        logger.error(err);
+                        rejectStyleUrls(err);
+                    } else {
+                        this.fileEngine
+                            .get(styleUrl)
+                            .then(
+                                data => {
+                                    component.styleUrlsData = component.styleUrlsData + data + '\n';
+                                    i++;
+                                    loopStyleUrls();
+                                },
+                                err => {
+                                    logger.error(err);
+                                    return Promise.reject('');
+                                }
+                            );
+                    }
+                } else {
+                    resolveStyleUrls();
+                }
+            };
+            loopStyleUrls();
+        });
+    }
+
     private getNavTabs(dependency): Array<any> {
         let navTabConfig = this.configuration.mainData.navTabConfig;
-        navTabConfig = navTabConfig.length === 0 ? _.cloneDeep(COMPODOC_CONSTANTS.navTabDefinitions) : navTabConfig;
+        navTabConfig =
+            navTabConfig.length === 0
+                ? _.cloneDeep(COMPODOC_CONSTANTS.navTabDefinitions)
+                : navTabConfig;
         let matchDepType = (depType: string) => {
             return depType === 'all' || depType === dependency.type;
         };
 
         let navTabs = [];
-        _.forEach(navTabConfig, (customTab) => {
-            let navTab = _.find(COMPODOC_CONSTANTS.navTabDefinitions, { 'id': customTab.id });
+        _.forEach(navTabConfig, customTab => {
+            let navTab = _.find(COMPODOC_CONSTANTS.navTabDefinitions, { id: customTab.id });
             if (!navTab) {
                 throw new Error(`Invalid tab ID '${customTab.id}' specified in tab configuration`);
             }
@@ -1256,23 +1326,51 @@ export class Application {
             navTab.label = customTab.label;
 
             // is tab applicable to target dependency?
-            if (-1 === _.findIndex(navTab.depTypes, matchDepType)) { return; }
+            if (-1 === _.findIndex(navTab.depTypes, matchDepType)) {
+                return;
+            }
 
             // global config
-            if (customTab.id === 'tree' && this.configuration.mainData.disableDomTree) { return; }
-            if (customTab.id === 'source' && this.configuration.mainData.disableSourceCode) { return; }
-            if (customTab.id === 'templateData' && this.configuration.mainData.disableTemplateTab) { return; }
+            if (customTab.id === 'tree' && this.configuration.mainData.disableDomTree) {
+                return;
+            }
+            if (customTab.id === 'source' && this.configuration.mainData.disableSourceCode) {
+                return;
+            }
+            if (customTab.id === 'templateData' && this.configuration.mainData.disableTemplateTab) {
+                return;
+            }
+            if (customTab.id === 'styleUrlsData' && this.configuration.mainData.disableStyleTab) {
+                return;
+            }
 
             // per dependency config
-            if (customTab.id === 'readme' && !dependency.readme) { return; }
-            if (customTab.id === 'example' && !dependency.exampleUrls) { return; }
-            if (customTab.id === 'templateData' && (!dependency.templateUrl || dependency.templateUrl.length === 0)) { return; }
+            if (customTab.id === 'readme' && !dependency.readme) {
+                return;
+            }
+            if (customTab.id === 'example' && !dependency.exampleUrls) {
+                return;
+            }
+            if (
+                customTab.id === 'templateData' &&
+                (!dependency.templateUrl || dependency.templateUrl.length === 0)
+            ) {
+                return;
+            }
+            if (
+                customTab.id === 'styleUrlsData' &&
+                (!dependency.styleUrls || dependency.styleUrls.length === 0)
+            ) {
+                return;
+            }
 
             navTabs.push(navTab);
         });
 
         if (navTabs.length === 0) {
-            throw new Error(`No valid navigation tabs have been defined for dependency type '${dependency.type}'. Specify \
+            throw new Error(`No valid navigation tabs have been defined for dependency type '${
+                dependency.type
+            }'. Specify \
 at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         }
 
@@ -1321,7 +1419,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             ? someComponents
             : this.dependenciesEngine.getComponents();
 
-        return new Promise((mainResolve, reject) => {
+        return new Promise((mainPrepareComponentResolve, mainPrepareComponentReject) => {
             let i = 0;
             let len = this.configuration.mainData.components.length;
             let loop = () => {
@@ -1331,68 +1429,90 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         logger.info(` ${component.name} has a README file, include it`);
                         let readmeFile = $markdownengine.readNeighbourReadmeFile(component.file);
                         component.readme = marked(readmeFile);
-                        let page = {
-                            path: 'components',
-                            name: component.name,
-                            id: component.id,
-                            navTabs: this.getNavTabs(component),
-                            context: 'component',
-                            component: component,
-                            depth: 1,
-                            pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                        };
-                        if (component.isDuplicate) {
-                            page.name += '-' + component.duplicateId;
-                        }
-                        this.configuration.addPage(page);
-                        if (component.templateUrl.length > 0) {
-                            logger.info(` ${component.name} has a templateUrl, include it`);
-                            this.handleTemplateurl(component).then(
-                                () => {
-                                    i++;
-                                    loop();
-                                },
-                                e => {
-                                    logger.error(e);
-                                }
-                            );
-                        } else {
-                            i++;
-                            loop();
-                        }
-                    } else {
-                        let page = {
-                            path: 'components',
-                            name: component.name,
-                            id: component.id,
-                            navTabs: this.getNavTabs(component),
-                            context: 'component',
-                            component: component,
-                            depth: 1,
-                            pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                        };
-                        if (component.isDuplicate) {
-                            page.name += '-' + component.duplicateId;
-                        }
-                        this.configuration.addPage(page);
-                        if (component.templateUrl.length > 0) {
-                            logger.info(` ${component.name} has a templateUrl, include it`);
-                            this.handleTemplateurl(component).then(
-                                () => {
-                                    i++;
-                                    loop();
-                                },
-                                e => {
-                                    logger.error(e);
-                                }
-                            );
-                        } else {
-                            i++;
-                            loop();
-                        }
                     }
+                    let page = {
+                        path: 'components',
+                        name: component.name,
+                        id: component.id,
+                        navTabs: this.getNavTabs(component),
+                        context: 'component',
+                        component: component,
+                        depth: 1,
+                        pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
+                    };
+
+                    if (component.isDuplicate) {
+                        page.name += '-' + component.duplicateId;
+                    }
+                    this.configuration.addPage(page);
+
+                    const componentTemplateUrlPromise = new Promise(
+                        (componentTemplateUrlResolve, componentTemplateUrlReject) => {
+                            if (component.templateUrl.length > 0) {
+                                logger.info(` ${component.name} has a templateUrl, include it`);
+                                this.handleTemplateurl(component).then(
+                                    () => {
+                                        componentTemplateUrlResolve();
+                                    },
+                                    e => {
+                                        logger.error(e);
+                                        componentTemplateUrlReject();
+                                    }
+                                );
+                            } else {
+                                componentTemplateUrlResolve();
+                            }
+                        }
+                    );
+                    const componentStyleUrlsPromise = new Promise(
+                        (componentStyleUrlsResolve, componentStyleUrlsReject) => {
+                            if (component.styleUrls.length > 0) {
+                                logger.info(` ${component.name} has styleUrls, include them`);
+                                this.handleStyleurls(component).then(
+                                    () => {
+                                        console.log(component);
+                                        componentStyleUrlsResolve();
+                                    },
+                                    e => {
+                                        logger.error(e);
+                                        componentStyleUrlsReject();
+                                    }
+                                );
+                            } else {
+                                componentStyleUrlsResolve();
+                            }
+                        }
+                    );
+                    const componentStylesPromise = new Promise(
+                        (componentStylesResolve, componentStylesReject) => {
+                            if (component.styles.length > 0) {
+                                logger.info(` ${component.name} has styles, include them`);
+                                this.handleStyles(component).then(
+                                    () => {
+                                        console.log(component);
+                                        componentStylesResolve();
+                                    },
+                                    e => {
+                                        logger.error(e);
+                                        componentStylesReject();
+                                    }
+                                );
+                            } else {
+                                componentStylesResolve();
+                            }
+                        }
+                    );
+
+                    Promise.all([
+                        componentTemplateUrlPromise,
+                        componentStyleUrlsPromise,
+                        componentStylesPromise
+                    ]).then(() => {
+                        i++;
+                        loop();
+                    });
                 } else {
-                    mainResolve();
+                    mainPrepareComponentResolve();
                 }
             };
             loop();
@@ -1755,7 +1875,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     });
 
                     cl.coveragePercent = Math.floor(
-                        totalStatementDocumented / totalStatements * 100
+                        (totalStatementDocumented / totalStatements) * 100
                     );
                     if (totalStatements === 0) {
                         cl.coveragePercent = 0;
@@ -1825,7 +1945,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
 
                     cl.coveragePercent = Math.floor(
-                        totalStatementDocumented / totalStatements * 100
+                        (totalStatementDocumented / totalStatements) * 100
                     );
                     cl.coverageCount = totalStatementDocumented + '/' + totalStatements;
                     cl.status = getStatus(cl.coveragePercent);
@@ -1895,7 +2015,9 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                 });
 
-                cla.coveragePercent = Math.floor(totalStatementDocumented / totalStatements * 100);
+                cla.coveragePercent = Math.floor(
+                    (totalStatementDocumented / totalStatements) * 100
+                );
                 if (totalStatements === 0) {
                     cla.coveragePercent = 0;
                 }
@@ -1962,7 +2084,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                 });
 
-                cl.coveragePercent = Math.floor(totalStatementDocumented / totalStatements * 100);
+                cl.coveragePercent = Math.floor((totalStatementDocumented / totalStatements) * 100);
                 if (totalStatements === 0) {
                     cl.coveragePercent = 0;
                 }
@@ -2029,7 +2151,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                 });
 
-                cl.coveragePercent = Math.floor(totalStatementDocumented / totalStatements * 100);
+                cl.coveragePercent = Math.floor((totalStatementDocumented / totalStatements) * 100);
                 if (totalStatements === 0) {
                     cl.coveragePercent = 0;
                 }
@@ -2051,7 +2173,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     totalStatementDocumented += 1;
                 }
 
-                cl.coveragePercent = Math.floor(totalStatementDocumented / totalStatements * 100);
+                cl.coveragePercent = Math.floor((totalStatementDocumented / totalStatements) * 100);
                 cl.coverageCount = totalStatementDocumented + '/' + totalStatements;
                 cl.status = getStatus(cl.coveragePercent);
                 totalProjectStatementDocumented += cl.coveragePercent;
@@ -2091,7 +2213,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             if (this.configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
                 this.htmlEngine.generateCoverageBadge(
                     this.configuration.mainData.output,
-										'documentation',
+                    'documentation',
                     coverageData
                 );
             }
@@ -2219,13 +2341,13 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                 } else {
                     let message = `Documentation coverage (${
-                        coverageData.count
-                    }%) is not over threshold (${
-                        this.configuration.mainData.coverageTestThreshold
-                    }%)`,
-                    messagePerFile = `Documentation coverage per file is over threshold (${
-                        this.configuration.mainData.coverageMinimumPerFile
-                    }%)`;
+                            coverageData.count
+                        }%) is not over threshold (${
+                            this.configuration.mainData.coverageTestThreshold
+                        }%)`,
+                        messagePerFile = `Documentation coverage per file is over threshold (${
+                            this.configuration.mainData.coverageMinimumPerFile
+                        }%)`;
                     generationPromiseReject();
                     if (this.configuration.mainData.coverageTestThresholdFail) {
                         logger.error(message);
@@ -2242,113 +2364,123 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
             }
         });
     }
-		public prepareUnitTestCoverage() {
-			logger.info('Process unit test coverage report');
-			return new Promise((resolve, reject)=>{
-				let covDat, covFileNames;
+    public prepareUnitTestCoverage() {
+        logger.info('Process unit test coverage report');
+        return new Promise((resolve, reject) => {
+            let covDat, covFileNames;
 
-				if (!this.configuration.mainData.coverageData['files']){
-					logger.warn('Missing documentation coverage data');
-				} else {
-						covDat = {};
-						covFileNames = _.map(this.configuration.mainData.coverageData['files'], (el) => {
-							let fileName = el.filePath;
-							covDat[fileName] = {type: el.type, linktype: el.linktype, linksubtype: el.linksubtype, name: el.name};
-              return fileName;
-						});
-				}
-				// read coverage summary file and data
-				let unitTestSummary = {};
-				let fileDat = this.fileEngine.getSync(this.configuration.mainData.unitTestCoverage);
-				if(fileDat){
-					unitTestSummary = JSON.parse(fileDat);
-				} else {
-					return Promise.reject('Error reading unit test coverage file');
-				}
-				let getCovStatus = function(percent, totalLines){
-					let status;
-					if(totalLines === 0){
-						status = 'uncovered'
-					} else if (percent <= 25){
-						status = 'low';
-					} else if (percent > 25 && percent <= 50){
-						status = 'medium';
-					} else if (percent > 50 && percent <= 75){
-						status = 'good'
-					} else {
-						status = 'very-good';
-					}
-					return status;
-				}
-				let getCoverageData = function(data, fileName) {
-					let out = {};
-					if (fileName !== 'total'){
-						if(covDat === undefined){
-							// need a name to include in output but this isn't visible
-							out = {name: fileName, filePath: fileName};
-						} else { //if (covDat[fileName]){
-              let findMatch = _.filter(covFileNames, (el)=>{
-                return (el.includes(fileName) || fileName.includes(el))
-              });
-              if(findMatch.length > 0){
-							   out = _.clone(covDat[findMatch[0]]);
-                out['filePath'] = fileName;
-              } //else {
-                //out = {name: fileName, filePath: fileName};
-              //}
-						}
-					}
-					let keysToGet = ['statements', 'branches', 'functions', 'lines'];
-					_.forEach(keysToGet, (key)=>{
-						if(data[key]){
-							let t = data[key];
-							out[key] = {coveragePercent: Math.round(t.pct),
-								coverageCount: '' + t.covered + '/' + t.total,
-								status: getCovStatus(t.pct, t.total)};
-						}
-					});
-					return out;
-				}
+            if (!this.configuration.mainData.coverageData['files']) {
+                logger.warn('Missing documentation coverage data');
+            } else {
+                covDat = {};
+                covFileNames = _.map(this.configuration.mainData.coverageData['files'], el => {
+                    let fileName = el.filePath;
+                    covDat[fileName] = {
+                        type: el.type,
+                        linktype: el.linktype,
+                        linksubtype: el.linksubtype,
+                        name: el.name
+                    };
+                    return fileName;
+                });
+            }
+            // read coverage summary file and data
+            let unitTestSummary = {};
+            let fileDat = this.fileEngine.getSync(this.configuration.mainData.unitTestCoverage);
+            if (fileDat) {
+                unitTestSummary = JSON.parse(fileDat);
+            } else {
+                return Promise.reject('Error reading unit test coverage file');
+            }
+            let getCovStatus = function(percent, totalLines) {
+                let status;
+                if (totalLines === 0) {
+                    status = 'uncovered';
+                } else if (percent <= 25) {
+                    status = 'low';
+                } else if (percent > 25 && percent <= 50) {
+                    status = 'medium';
+                } else if (percent > 50 && percent <= 75) {
+                    status = 'good';
+                } else {
+                    status = 'very-good';
+                }
+                return status;
+            };
+            let getCoverageData = function(data, fileName) {
+                let out = {};
+                if (fileName !== 'total') {
+                    if (covDat === undefined) {
+                        // need a name to include in output but this isn't visible
+                        out = { name: fileName, filePath: fileName };
+                    } else {
+                        //if (covDat[fileName]){
+                        let findMatch = _.filter(covFileNames, el => {
+                            return el.includes(fileName) || fileName.includes(el);
+                        });
+                        if (findMatch.length > 0) {
+                            out = _.clone(covDat[findMatch[0]]);
+                            out['filePath'] = fileName;
+                        } //else {
+                        //out = {name: fileName, filePath: fileName};
+                        //}
+                    }
+                }
+                let keysToGet = ['statements', 'branches', 'functions', 'lines'];
+                _.forEach(keysToGet, key => {
+                    if (data[key]) {
+                        let t = data[key];
+                        out[key] = {
+                            coveragePercent: Math.round(t.pct),
+                            coverageCount: '' + t.covered + '/' + t.total,
+                            status: getCovStatus(t.pct, t.total)
+                        };
+                    }
+                });
+                return out;
+            };
 
-				let unitTestData = {};
-				let files = [];
-				for(let file in unitTestSummary){
-					let dat = getCoverageData(unitTestSummary[file], file);
-					if (file === 'total'){
-						unitTestData['total'] = dat;
-					} else {
-						files.push(dat);
-					}
-				}
-				unitTestData['files'] = files;
-				unitTestData['idColumn'] = (covDat !== undefined); // should we include the id column
-				this.configuration.mainData.unitTestData = unitTestData;
-				this.configuration.addPage({
-					name: 'unit-test',
-          id: 'unit-test',
-          context: 'unit-test',
-          files: files,
-          data: unitTestData,
-          depth: 0,
-          pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
-				});
+            let unitTestData = {};
+            let files = [];
+            for (let file in unitTestSummary) {
+                let dat = getCoverageData(unitTestSummary[file], file);
+                if (file === 'total') {
+                    unitTestData['total'] = dat;
+                } else {
+                    files.push(dat);
+                }
+            }
+            unitTestData['files'] = files;
+            unitTestData['idColumn'] = covDat !== undefined; // should we include the id column
+            this.configuration.mainData.unitTestData = unitTestData;
+            this.configuration.addPage({
+                name: 'unit-test',
+                id: 'unit-test',
+                context: 'unit-test',
+                files: files,
+                data: unitTestData,
+                depth: 0,
+                pageType: COMPODOC_DEFAULTS.PAGE_TYPES.ROOT
+            });
 
-				if(this.configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat){
-					let keysToGet = ['statements', 'branches', 'functions', 'lines'];
-					_.forEach(keysToGet, (key)=>{
-						if(unitTestData['total'][key]){
-							this.htmlEngine.generateCoverageBadge(
-								this.configuration.mainData.output,
-								key,
-								{count: unitTestData['total'][key]['coveragePercent'],
-									status: unitTestData['total'][key]['status']}
-							)
-						}
-					});
-				}
-				resolve();
-			});
-		}
+            if (this.configuration.mainData.exportFormat === COMPODOC_DEFAULTS.exportFormat) {
+                let keysToGet = ['statements', 'branches', 'functions', 'lines'];
+                _.forEach(keysToGet, key => {
+                    if (unitTestData['total'][key]) {
+                        this.htmlEngine.generateCoverageBadge(
+                            this.configuration.mainData.output,
+                            key,
+                            {
+                                count: unitTestData['total'][key]['coveragePercent'],
+                                status: unitTestData['total'][key]['status']
+                            }
+                        );
+                    }
+                });
+            }
+            resolve();
+        });
+    }
 
     private processPage(page): Promise<void> {
         logger.info('Process page', page.name);
@@ -2400,14 +2532,16 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                     }
                 };
                 if (!this.configuration.mainData.disableSearch) {
-                    this.searchEngine.generateSearchIndexJson(this.configuration.mainData.output).then(
-                        () => {
-                            callbacksAfterGenerateSearchIndexJson();
-                        },
-                        e => {
-                            logger.error(e);
-                        }
-                    );
+                    this.searchEngine
+                        .generateSearchIndexJson(this.configuration.mainData.output)
+                        .then(
+                            () => {
+                                callbacksAfterGenerateSearchIndexJson();
+                            },
+                            e => {
+                                logger.error(e);
+                            }
+                        );
                 } else {
                     callbacksAfterGenerateSearchIndexJson();
                 }
@@ -2423,13 +2557,15 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     private processMenu(mainData): Promise<void> {
         logger.info('Process menu...');
 
-        return this.htmlEngine.renderMenu(this.configuration.mainData.templates, mainData).then(htmlData => {
-            let finalPath = `${mainData.output}/js/menu-wc.js`;
-            return this.fileEngine.write(finalPath, htmlData).catch(err => {
-                logger.error('Error during ' + finalPath + ' page generation');
-                return Promise.reject('');
+        return this.htmlEngine
+            .renderMenu(this.configuration.mainData.templates, mainData)
+            .then(htmlData => {
+                let finalPath = `${mainData.output}/js/menu-wc.js`;
+                return this.fileEngine.write(finalPath, htmlData).catch(err => {
+                    logger.error('Error during ' + finalPath + ' page generation');
+                    return Promise.reject('');
+                });
             });
-        });
     }
 
     public processAdditionalPages() {
@@ -2528,54 +2664,42 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                 if (errorCopy) {
                     logger.error('Error during resources copy ', errorCopy);
                 } else {
-
-                    const extThemePromise = new Promise(
-                        (extThemeResolve, extThemeReject) => {
-                            if (this.configuration.mainData.extTheme) {
-                                fs.copy(
-                                    path.resolve(
-                                        process.cwd() +
-                                            path.sep +
-                                            this.configuration.mainData.extTheme
-                                    ),
-                                    path.resolve(finalOutput + '/styles/'),
-                                    function(errorCopyTheme) {
-                                        if (errorCopyTheme) {
-                                            logger.error(
-                                                'Error during external styling theme copy ',
-                                                errorCopyTheme
-                                            );
-                                            extThemeReject();
-                                        } else {
-                                            logger.info(
-                                                'External styling theme copy succeeded'
-                                            );
-                                            extThemeResolve();
-                                        }
+                    const extThemePromise = new Promise((extThemeResolve, extThemeReject) => {
+                        if (this.configuration.mainData.extTheme) {
+                            fs.copy(
+                                path.resolve(
+                                    process.cwd() + path.sep + this.configuration.mainData.extTheme
+                                ),
+                                path.resolve(finalOutput + '/styles/'),
+                                function(errorCopyTheme) {
+                                    if (errorCopyTheme) {
+                                        logger.error(
+                                            'Error during external styling theme copy ',
+                                            errorCopyTheme
+                                        );
+                                        extThemeReject();
+                                    } else {
+                                        logger.info('External styling theme copy succeeded');
+                                        extThemeResolve();
                                     }
-                                );
-                            } else {
-                                extThemeResolve();
-                            }
+                                }
+                            );
+                        } else {
+                            extThemeResolve();
                         }
-                    );
+                    });
 
                     const customFaviconPromise = new Promise(
                         (customFaviconResolve, customFaviconReject) => {
-                            if (
-                                this.configuration.mainData.customFavicon !== ''
-                            ) {
+                            if (this.configuration.mainData.customFavicon !== '') {
                                 logger.info(`Custom favicon supplied`);
                                 fs.copy(
                                     path.resolve(
                                         process.cwd() +
                                             path.sep +
-                                            this.configuration.mainData
-                                                .customFavicon
+                                            this.configuration.mainData.customFavicon
                                     ),
-                                    path.resolve(
-                                        finalOutput + '/images/favicon.ico'
-                                    ),
+                                    path.resolve(finalOutput + '/images/favicon.ico'),
                                     errorCopyFavicon => {
                                         // tslint:disable-line
                                         if (errorCopyFavicon) {
@@ -2585,9 +2709,7 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                                             );
                                             customFaviconReject();
                                         } else {
-                                            logger.info(
-                                                'External custom favicon copy succeeded'
-                                            );
+                                            logger.info('External custom favicon copy succeeded');
                                             customFaviconResolve();
                                         }
                                     }
@@ -2604,8 +2726,8 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                             fs.copy(
                                 path.resolve(
                                     process.cwd() +
-                                    path.sep +
-                                    this.configuration.mainData.customLogo
+                                        path.sep +
+                                        this.configuration.mainData.customLogo
                                 ),
                                 path.resolve(finalOutput + '/images/logo.png'),
                                 errorCopyLogo => {
@@ -2627,13 +2749,11 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
                         }
                     });
 
-                    Promise.all([
-                        extThemePromise,
-                        customFaviconPromise,
-                        customLogoPromise
-                    ]).then(() => {
-                        onComplete();
-                    });
+                    Promise.all([extThemePromise, customFaviconPromise, customLogoPromise]).then(
+                        () => {
+                            onComplete();
+                        }
+                    );
                 }
             }
         );
