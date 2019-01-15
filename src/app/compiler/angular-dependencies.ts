@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as _ from 'lodash';
 import Ast, { ts, SyntaxKind } from 'ts-simple-ast';
 
-import { logger } from '../../logger';
+import { logger } from '../../utils/logger';
 import { markedtags, mergeTagsAndArgs, cleanLifecycleHooksFromMethods } from '../../utils/utils';
 import { kindToType } from '../../utils/kind-to-type';
 import ComponentsTreeEngine from '../engines/components-tree.engine';
@@ -551,11 +551,21 @@ export class AngularDependencies extends FrameworkDependencies {
                         if (infos.args) {
                             functionDep.args = infos.args;
                         }
+                        if (infos.returnType) {
+                            functionDep.returnType = infos.returnType;
+                        }
                         if (infos.jsdoctags && infos.jsdoctags.length > 0) {
                             functionDep.jsdoctags = infos.jsdoctags;
                         }
                         if (typeof infos.ignore === 'undefined') {
-                            outputSymbols.miscellaneous.functions.push(functionDep);
+                            if (
+                                !(
+                                    this.hasPrivateJSDocTag(functionDep.jsdoctags) &&
+                                    Configuration.mainData.disablePrivate
+                                )
+                            ) {
+                                outputSymbols.miscellaneous.functions.push(functionDep);
+                            }
                         }
                     } else if (ts.isEnumDeclaration(node)) {
                         let infos = this.visitEnumDeclaration(node);
@@ -742,11 +752,21 @@ export class AngularDependencies extends FrameworkDependencies {
                         if (infos.args) {
                             functionDep.args = infos.args;
                         }
+                        if (infos.returnType) {
+                            functionDep.returnType = infos.returnType;
+                        }
                         if (infos.jsdoctags && infos.jsdoctags.length > 0) {
                             functionDep.jsdoctags = infos.jsdoctags;
                         }
                         if (typeof infos.ignore === 'undefined') {
-                            outputSymbols.miscellaneous.functions.push(functionDep);
+                            if (
+                                !(
+                                    this.hasPrivateJSDocTag(functionDep.jsdoctags) &&
+                                    Configuration.mainData.disablePrivate
+                                )
+                            ) {
+                                outputSymbols.miscellaneous.functions.push(functionDep);
+                            }
                         }
                     }
                     if (ts.isEnumDeclaration(node)) {
@@ -1040,6 +1060,18 @@ export class AngularDependencies extends FrameworkDependencies {
             case 159:
                 return 'typeReference';
         }
+    }
+
+    private hasPrivateJSDocTag(tags): boolean {
+        let result = false;
+        if (tags) {
+            tags.forEach(tag => {
+                if (tag.tagName && tag.tagName && tag.tagName.text === 'private') {
+                    result = true;
+                }
+            });
+        }
+        return result;
     }
 
     private visitFunctionDeclaration(method: ts.FunctionDeclaration) {
