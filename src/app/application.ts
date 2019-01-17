@@ -1,41 +1,46 @@
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import * as LiveServer from 'live-server';
 import * as _ from 'lodash';
+import * as path from 'path';
 
 import { SyntaxKind } from 'ts-simple-ast';
 
 const chokidar = require('chokidar');
 const marked = require('marked');
 const traverse = require('traverse');
+const crypto = require('crypto');
 
 import { logger } from '../utils/logger';
-import HtmlEngine from './engines/html.engine';
-import MarkdownEngine from './engines/markdown.engine';
-import FileEngine from './engines/file.engine';
+
 import Configuration from './configuration';
+
+import DependenciesEngine from './engines/dependencies.engine';
+import ExportEngine from './engines/export.engine';
+import FileEngine from './engines/file.engine';
+import HtmlEngine from './engines/html.engine';
+import I18nEngine from './engines/i18n.engine';
+import MarkdownEngine from './engines/markdown.engine';
 import NgdEngine from './engines/ngd.engine';
 import SearchEngine from './engines/search.engine';
-import ExportEngine from './engines/export.engine';
-import I18nEngine from './engines/i18n.engine';
 
 import { AngularDependencies } from './compiler/angular-dependencies';
 import { AngularJSDependencies } from './compiler/angularjs-dependencies';
 
-import { COMPODOC_DEFAULTS } from '../utils/defaults';
+import AngularVersionUtil from '../utils/angular-version.util';
 import { COMPODOC_CONSTANTS } from '../utils/constants';
-
-import {
-    findMainSourceFolder,
-    cleanNameWithoutSpaceAndToLowerCase,
-    cleanSourcesForWatch
-} from '../utils/utils';
-
+import { COMPODOC_DEFAULTS } from '../utils/defaults';
 import { promiseSequential } from '../utils/promise-sequential';
-import DependenciesEngine from './engines/dependencies.engine';
 import RouterParserUtil from '../utils/router-parser.util';
 
-import AngularVersionUtil from '../utils/angular-version.util';
+import {
+    cleanNameWithoutSpaceAndToLowerCase,
+    cleanSourcesForWatch,
+    findMainSourceFolder
+} from '../utils/utils';
+
+import { AdditionalNode } from './interfaces/additional-node.interface';
+import { CoverageData } from './interfaces/coverageData.interface';
+import { resolve } from 'url';
 
 let cwd = process.cwd();
 let startTime = new Date();
@@ -745,22 +750,37 @@ export class Application {
 
                     const parsedSummaryData = JSON.parse(summaryData);
 
-                    let that = this,
-                        level = 0;
+                    let that = this;
+                    let lastLevelOnePage = null;
 
                     traverse(parsedSummaryData).forEach(function() {
+                        // tslint:disable-next-line:no-invalid-this
                         if (this.notRoot && typeof this.node === 'object') {
+                            // tslint:disable-next-line:no-invalid-this
                             let rawPath = this.path;
-                            let file = this.node['file'];
-                            let title = this.node['title'];
+                            // tslint:disable-next-line:no-invalid-this
+                            let additionalNode: AdditionalNode = this.node;
+                            let file = additionalNode.file;
+                            let title = additionalNode.title;
                             let finalPath = Configuration.mainData.includesFolder;
 
                             let finalDepth = rawPath.filter(el => {
-                                return !isNaN(parseInt(el));
+                                return !isNaN(parseInt(el, 10));
                             });
 
                             if (typeof file !== 'undefined' && typeof title !== 'undefined') {
                                 const url = cleanNameWithoutSpaceAndToLowerCase(title);
+
+                                /**
+                                 * Id created with title + file path hash, seems to be hypothetically unique here
+                                 */
+                                const id = crypto
+                                    .createHash('md5')
+                                    .update(title + file)
+                                    .digest('hex');
+
+                                // tslint:disable-next-line:no-invalid-this
+                                this.node.id = id;
 
                                 let lastElementRootTree = null;
                                 finalDepth.forEach(el => {
@@ -787,16 +807,30 @@ export class Application {
                                 if (finalDepth.length > 5) {
                                     logger.error('Only 5 levels of depth are supported');
                                 } else {
-                                    Configuration.addAdditionalPage({
+                                    let _page = {
                                         name: title,
-                                        id: title,
+                                        id: id,
                                         filename: url,
                                         context: 'additional-page',
                                         path: finalPath,
                                         additionalPage: markdownFile,
                                         depth: finalDepth.length,
+                                        childrenLength: additionalNode.children
+                                            ? additionalNode.children.length
+                                            : 0,
+                                        children: [],
+                                        lastChild: false,
                                         pageType: COMPODOC_DEFAULTS.PAGE_TYPES.INTERNAL
-                                    });
+                                    };
+                                    if (finalDepth.length === 1) {
+                                        lastLevelOnePage = _page;
+                                    }
+                                    if (finalDepth.length > 1) {
+                                        // store all child pages of the last root level 1 page inside it
+                                        lastLevelOnePage.children.push(_page);
+                                    } else {
+                                        Configuration.addAdditionalPage(_page);
+                                    }
                                 }
                             }
                         }
@@ -2310,11 +2344,13 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
         return new Promise((resolve, reject) => {
             let covDat, covFileNames;
 
-            if (!Configuration.mainData.coverageData['files']) {
+            let coverageData: CoverageData = Configuration.mainData.coverageData;
+
+            if (!coverageData.files) {
                 logger.warn('Missing documentation coverage data');
             } else {
                 covDat = {};
-                covFileNames = _.map(Configuration.mainData.coverageData['files'], el => {
+                covFileNames = _.map(coverageData.files, el => {
                     let fileName = el.filePath;
                     covDat[fileName] = {
                         type: el.type,
@@ -2501,7 +2537,18 @@ at least one config for the 'info' or 'source' tab in --navTabConfig.`);
     public processAdditionalPages() {
         logger.info('Process additional pages');
         let pages = Configuration.mainData.additionalPages;
-        Promise.all(pages.map((page, i) => this.processPage(page)))
+        Promise.all(
+            pages.map(page => {
+                if (page.children.length > 0) {
+                    return Promise.all([
+                        this.processPage(page),
+                        ...page.children.map(childPage => this.processPage(childPage))
+                    ]);
+                } else {
+                    return this.processPage(page);
+                }
+            })
+        )
             .then(() => {
                 SearchEngine.generateSearchIndexJson(Configuration.mainData.output).then(() => {
                     if (Configuration.mainData.assetsFolder !== '') {
