@@ -613,6 +613,11 @@ describe('CLI simple generation - big app', () => {
         );
     });
 
+    it('should support literal type', () => {
+        let file = read(distFolder + '/miscellaneous/typealiases.html');
+        expect(file).to.contain('<code>Pick&lt;NavigationExtras | replaceUrl&gt;</code>');
+    });
+
     it('should support multiple union types with array', () => {
         let file = read(distFolder + '/components/TodoComponent.html');
         expect(file).to.contain('<code>(string | number)[]</code>');
@@ -758,6 +763,11 @@ describe('CLI simple generation - big app', () => {
         expect(file).to.contain(
             'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string'
         );
+    });
+
+    it('correct http reference for other classes using @link in description of a miscellaneous function', () => {
+        let file = read(distFolder + '/miscellaneous/functions.html');
+        expect(file).to.contain('<a href="../components/ListComponent.html">ListComponent</a>');
     });
 
     it('shorten long arrow function declaration for properties', () => {
