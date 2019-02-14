@@ -613,6 +613,11 @@ describe('CLI simple generation - big app', () => {
         );
     });
 
+    it('should support literal type', () => {
+        let file = read(distFolder + '/miscellaneous/typealiases.html');
+        expect(file).to.contain('<code>Pick&lt;NavigationExtras | replaceUrl&gt;</code>');
+    });
+
     it('should support multiple union types with array', () => {
         let file = read(distFolder + '/components/TodoComponent.html');
         expect(file).to.contain('<code>(string | number)[]</code>');
@@ -695,7 +700,7 @@ describe('CLI simple generation - big app', () => {
     it('should support Type parameters', () => {
         let file = read(distFolder + '/components/AppComponent.html');
         expect(file).to.contain(
-            `<ul class="type-parameters">\n                                        <li>T</li>\n                                        <li>K</li>\n                                </ul>`
+            `<ul class="type-parameters">\n                        <li>T</li>\n                        <li>K</li>\n                    </ul>`
         );
     });
 
@@ -760,8 +765,18 @@ describe('CLI simple generation - big app', () => {
         );
     });
 
+    it('correct http reference for other classes using @link in description of a miscellaneous function', () => {
+        let file = read(distFolder + '/miscellaneous/functions.html');
+        expect(file).to.contain('<a href="../components/ListComponent.html">ListComponent</a>');
+    });
+
     it('shorten long arrow function declaration for properties', () => {
         let file = read(distFolder + '/classes/Todo.html');
         expect(file).to.contain('() &#x3D;&gt; {...}</code>');
+    });
+
+    it('correct supports 1000 as PollingSpeed for decorator arguments', () => {
+        let file = read(distFolder + '/classes/SomeFeature.html');
+        expect(file).to.contain('code>@throttle(1000 as PollingSpeed');
     });
 });
