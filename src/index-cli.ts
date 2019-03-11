@@ -77,9 +77,10 @@ export class CliApplication extends Application {
             )
             .option(
                 '-e, --exportFormat [format]',
-                'Export in specified format (json, html)',
+                'Export in specified format (json, html, pdf)',
                 COMPODOC_DEFAULTS.exportFormat
             )
+            .option('--files [files]', 'Files provided by external tool, used for coverage test')
             .option(
                 '--language [language]',
                 'Language used for the generated documentation (en-US, fr-FR, zh-CN, pt-BR)',
@@ -514,30 +515,36 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
         }
 
         if (!this.isWatching) {
-            console.log(fs.readFileSync(path.join(__dirname, '../src/banner')).toString());
-            console.log(pkg.version);
-            console.log('');
-            console.log(`TypeScript version used by Compodoc : ${ts.version}`);
-            console.log('');
+            if (!logger.silent) {
+                console.log(`Compodoc v${pkg.version}`);
+            } else {
+                console.log(fs.readFileSync(path.join(__dirname, '../src/banner')).toString());
+                console.log(pkg.version);
+                console.log('');
+                console.log(`TypeScript version used by Compodoc : ${ts.version}`);
+                console.log('');
 
-            if (FileEngine.existsSync(cwd + path.sep + 'package.json')) {
-                const packageData = FileEngine.getSync(cwd + path.sep + 'package.json');
-                if (packageData) {
-                    const parsedData = JSON.parse(packageData);
-                    const projectDevDependencies = parsedData.devDependencies;
-                    if (projectDevDependencies && projectDevDependencies.typescript) {
-                        const tsProjectVersion = AngularVersionUtil.cleanVersion(
-                            projectDevDependencies.typescript
-                        );
-                        console.log(`TypeScript version of current project : ${tsProjectVersion}`);
-                        console.log('');
+                if (FileEngine.existsSync(cwd + path.sep + 'package.json')) {
+                    const packageData = FileEngine.getSync(cwd + path.sep + 'package.json');
+                    if (packageData) {
+                        const parsedData = JSON.parse(packageData);
+                        const projectDevDependencies = parsedData.devDependencies;
+                        if (projectDevDependencies && projectDevDependencies.typescript) {
+                            const tsProjectVersion = AngularVersionUtil.cleanVersion(
+                                projectDevDependencies.typescript
+                            );
+                            console.log(
+                                `TypeScript version of current project : ${tsProjectVersion}`
+                            );
+                            console.log('');
+                        }
                     }
                 }
+                console.log(`Node.js version : ${process.version}`);
+                console.log('');
+                console.log(`Operating system : ${osName(os.platform(), os.release())}`);
+                console.log('');
             }
-            console.log(`Node.js version : ${process.version}`);
-            console.log('');
-            console.log(`Operating system : ${osName(os.platform(), os.release())}`);
-            console.log('');
         }
 
         if (configExplorerResult) {
@@ -580,31 +587,51 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
             includeFiles = configFile.include;
         }
 
+        /**
+         * Check --files argument call
+         */
+        const argv = require('minimist')(process.argv.slice(2));
+        if (argv && argv.files) {
+            Configuration.mainData.hasFilesToCoverage = true;
+            if (typeof argv.files === 'string') {
+                super.setFiles([argv.files]);
+            } else {
+                super.setFiles(argv.files);
+            }
+        }
+
         if (program.serve && !Configuration.mainData.tsconfig && program.output) {
             // if -s & -d, serve it
-            if (!FileEngine.existsSync(program.output)) {
-                logger.error(`${program.output} folder doesn't exist`);
+            if (!FileEngine.existsSync(Configuration.mainData.output)) {
+                logger.error(`${Configuration.mainData.output} folder doesn't exist`);
                 process.exit(1);
             } else {
                 logger.info(
-                    `Serving documentation from ${program.output} at http://127.0.0.1:${
-                        program.port
-                    }`
+                    `Serving documentation from ${
+                        Configuration.mainData.output
+                    } at http://127.0.0.1:${program.port}`
                 );
-                super.runWebServer(program.output);
+                super.runWebServer(Configuration.mainData.output);
             }
         } else if (program.serve && !Configuration.mainData.tsconfig && !program.output) {
             // if only -s find ./documentation, if ok serve, else error provide -d
-            if (!FileEngine.existsSync(program.output)) {
+            if (!FileEngine.existsSync(Configuration.mainData.output)) {
                 logger.error('Provide output generated folder with -d flag');
                 process.exit(1);
             } else {
                 logger.info(
-                    `Serving documentation from ${program.output} at http://127.0.0.1:${
-                        program.port
-                    }`
+                    `Serving documentation from ${
+                        Configuration.mainData.output
+                    } at http://127.0.0.1:${program.port}`
                 );
-                super.runWebServer(program.output);
+                super.runWebServer(Configuration.mainData.output);
+            }
+        } else if (Configuration.mainData.hasFilesToCoverage) {
+            if (program.coverageMinimumPerFile) {
+                logger.info('Run documentation coverage test for files');
+                super.testCoverage();
+            } else {
+                logger.error('Missing coverage configuration');
             }
         } else {
             if (program.hideGenerator) {
