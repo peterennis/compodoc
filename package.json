@@ -11,9 +11,6 @@
         "changelog": " auto-changelog -o CH.md  --template tools/changelog-template.hbs --starting-commit f597531e",
         "download-api-list": "node tools/download-api-list.js",
         "start": "npm run test:watch",
-        "pretest-jest": "tsc -p test/tsconfig.json && node test/dist/cli-clean-root-folder.js",
-        "test-jest": "./node_modules/.bin/jest --maxWorkers=2 && node test/dist/cli-revert-root-folder.js",
-        "posttest-jest": "rimraf test/dist",
         "pretest": "tsc -p test/tsconfig.json && node test/dist/cli-clean-root-folder.js",
         "test": "cross-env TS_NODE_PROJECT=test/tsconfig.json TS_NODE_DISABLE_WARNINGS=1 nyc --reporter=lcov mocha --opts test/mocha.opts && node test/dist/cli-revert-root-folder.js",
         "posttest": "rimraf test/dist",
@@ -34,12 +31,22 @@
         "local-test-e2e-mocha": "cross-env MODE_LOCAL=1 npm run test-e2e-mocha",
         "postinstall": "opencollective-postinstall || exit 0",
         "format:check": "prettier --config ./.prettierrc --list-different \"src/**/*.ts\"",
-        "format:write": "prettier --config ./.prettierrc --write \"src/**/*.ts\""
+        "format:write": "prettier --config ./.prettierrc --write \"src/**/*.ts\"",
+        "test-jest": "jest",
+        "test-jest:watch": "jest --watch",
+        "build-refactoring": "rollup -c rollup/rollup.config.js -i ./src-refactored/index-cli.ts -o dist/index-cli.js -f cjs"
     },
     "watch": {
         "build": {
             "patterns": [
                 "src/**/*.ts"
+            ],
+            "extensions": "js,ts",
+            "quiet": true
+        },
+        "build-refactoring": {
+            "patterns": [
+                "src-refactored/**/*.ts"
             ],
             "extensions": "js,ts",
             "quiet": true
@@ -76,6 +83,7 @@
         "colors": "^1.3.3",
         "commander": "^2.20.0",
         "cosmiconfig": "^5.2.1",
+        "decache": "^4.5.1",
         "fancy-log": "^1.3.3",
         "findit2": "^2.2.3",
         "fs-extra": "^8.0.1",
@@ -95,6 +103,7 @@
         "pdfmake": "^0.1.57",
         "semver": "^6.1.1",
         "traverse": "^0.6.6",
+        "ts-morph": "^3.1.0",
         "ts-simple-ast": "12.4.0",
         "uuid": "^3.3.2"
     },
@@ -130,21 +139,6 @@
         "ts-jest": "^24.0.2",
         "ts-node": "^8.2.0",
         "tslint": "^5.17.0"
-    },
-    "nyc": {
-        "include": [
-            "dist/index-cli.js",
-            "bin/*.js"
-        ],
-        "extension": [
-            ".js"
-        ],
-        "reporter": [
-            "json",
-            "html",
-            "text-summary"
-        ],
-        "all": true
     },
     "collective": {
         "type": "opencollective",
