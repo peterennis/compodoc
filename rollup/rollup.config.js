@@ -23,6 +23,8 @@ export default {
         'semver',
         'json5',
         'ts-simple-ast',
-        'i18next'
+        'i18next',
+        'loglevel',
+        'ts-morph'
     ]
 };

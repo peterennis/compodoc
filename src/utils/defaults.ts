@@ -26,11 +26,13 @@ export const COMPODOC_DEFAULTS = {
     disableInternal: false,
     disableLifeCycleHooks: false,
     disableRoutesGraph: false,
+    disableDependencies: false,
     PAGE_TYPES: {
         ROOT: 'root',
         INTERNAL: 'internal'
     },
     gaSite: 'auto',
     coverageTestShowOnlyFailed: false,
-    language: 'en-US'
+    language: 'en-US',
+    maxSearchResults: 15
 };

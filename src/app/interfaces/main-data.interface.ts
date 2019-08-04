@@ -54,6 +54,7 @@ export interface MainDataInterface {
     disableLifeCycleHooks: boolean;
     disableRoutesGraph: boolean;
     disableSearch: boolean;
+    disableDependencies: boolean;
     watch: boolean;
     mainGraph: string;
     coverageTest: boolean;
@@ -77,4 +78,5 @@ export interface MainDataInterface {
     angularProject: boolean;
     angularJSProject: boolean;
     language: string;
+    maxSearchResults: number;
 }
