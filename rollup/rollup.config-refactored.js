@@ -2,8 +2,14 @@
 import typescript from 'rollup-plugin-typescript2';
 
 export default {
+    input: {
+        'index-cli': './src-refactored/index-cli.ts',
+        index: './src-refactored/index.ts'
+    },
     output: {
-        sourcemap: 'inline'
+        sourcemap: 'inline',
+        format: 'cjs',
+        dir: 'dist'
     },
     plugins: [
         typescript({
