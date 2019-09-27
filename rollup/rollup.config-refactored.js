@@ -1,10 +1,10 @@
 // rollup.config.js
-import typescript from 'rollup-plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 
 export default {
     input: {
-        'index-cli': './src/index-cli.ts',
-        index: './src/index.ts'
+        'index-cli': './src-refactored/index-cli.ts',
+        index: './src-refactored/index.ts'
     },
     output: {
         sourcemap: 'inline',
@@ -13,7 +13,11 @@ export default {
     },
     plugins: [
         typescript({
-            typescript: require('typescript')
+            tsconfigDefaults: {
+                compilerOptions: {
+                    lib: ['es2018']
+                }
+            }
         })
     ],
     external: [
