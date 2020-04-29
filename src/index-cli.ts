@@ -13,7 +13,7 @@ import AngularVersionUtil from './utils/angular-version.util';
 import { COMPODOC_DEFAULTS } from './utils/defaults';
 import { logger } from './utils/logger';
 import { ParserUtil } from './utils/parser.util.class';
-import { handlePath, readConfig } from './utils/utils';
+import { handlePath, readConfig, ignoreDirectory } from './utils/utils';
 
 import { cosmiconfigSync } from 'cosmiconfig';
 
@@ -733,8 +733,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                     let finder = require('findit2')(startCwd || '.');
 
                     finder.on('directory', function(dir, stat, stop) {
-                        let base = path.basename(dir);
-                        if (base === '.git' || base === 'node_modules') {
+                        if (ignoreDirectory(dir)) {
                             stop();
                         }
                     });
@@ -742,18 +741,24 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                     finder.on('file', (file, stat) => {
                         if (/(spec|\.d)\.ts/.test(file)) {
                             logger.warn('Ignoring', file);
-                        } else if (excludeParser.testFile(file) && path.extname(file) === '.ts') {
+                        } else if (
+                            excludeParser.testFile(file) &&
+                            (path.extname(file) === '.ts' || path.extname(file) === '.tsx')
+                        ) {
                             logger.warn('Excluding', file);
                         } else if (includeFiles.length > 0) {
                             /**
                              * If include provided in tsconfig, use only this source,
                              * and not files found with global findit scan in working directory
                              */
-                            if (path.extname(file) === '.ts' && includeParser.testFile(file)) {
+                            if (
+                                (path.extname(file) === '.ts' || path.extname(file) === '.tsx') &&
+                                includeParser.testFile(file)
+                            ) {
                                 logger.debug('Including', file);
                                 scannedFiles.push(file);
                             } else {
-                                if (path.extname(file) === '.ts') {
+                                if (path.extname(file) === '.ts' || path.extname(file) === '.tsx') {
                                     logger.warn('Excludinge', file);
                                 }
                             }
@@ -850,8 +855,7 @@ Note: Certain tabs will only be shown if applicable to a given dependency`,
                         let finder = require('findit2')(path.resolve(startCwd));
 
                         finder.on('directory', function(dir, stat, stop) {
-                            let base = path.basename(dir);
-                            if (base === '.git' || base === 'node_modules') {
+                            if (ignoreDirectory(dir)) {
                                 stop();
                             }
                         });
