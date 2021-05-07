@@ -8,6 +8,7 @@ const tmp = temporaryDir();
 describe('CLI simple generation - big app', () => {
     let stdoutString = undefined;
     let clockInterfaceFile;
+    let interfaceIDATAFile;
     let searchFuncFile;
 
     let todoComponentFile,
@@ -16,6 +17,7 @@ describe('CLI simple generation - big app', () => {
         appComponentFile,
         listComponentFile,
         footerComponentFile,
+        doNothingDirectiveFile,
         todoClassFile,
         tidiClassFile,
         aboutModuleFile,
@@ -43,6 +45,7 @@ describe('CLI simple generation - big app', () => {
         }
         stdoutString = ls.stdout.toString();
         clockInterfaceFile = read(`${distFolder}/interfaces/ClockInterface.html`);
+        interfaceIDATAFile = read(`${distFolder}/interfaces/IDATA.html`);
         searchFuncFile = read(`${distFolder}/interfaces/SearchFunc.html`);
 
         routesIndex = read(`${distFolder}/js/routes/routes_index.js`);
@@ -52,6 +55,8 @@ describe('CLI simple generation - big app', () => {
         aboutComponentFile = read(`${distFolder}/components/AboutComponent.html`);
         appComponentFile = read(`${distFolder}/components/AppComponent.html`);
         listComponentFile = read(`${distFolder}/components/ListComponent.html`);
+
+        doNothingDirectiveFile = read(`${distFolder}/directives/DoNothingDirective.html`);
 
         todoClassFile = read(`${distFolder}/classes/Todo.html`);
         tidiClassFile = read(`${distFolder}/classes/Tidi.html`);
@@ -328,9 +333,15 @@ describe('CLI simple generation - big app', () => {
         expect(todoStoreFile).to.contain('code><a href="../classes/Todo.html" target="_self" >To');
     });
 
-    it('should have inherreturn type', () => {
+    it('should have inherit return type', () => {
         expect(todoClassFile).to.contain(
             'code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number"'
+        );
+    });
+
+    it('should have inherit input type', () => {
+        expect(aboutComponentFile).to.contain(
+            'code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string"'
         );
     });
 
@@ -358,9 +369,14 @@ describe('CLI simple generation - big app', () => {
         expect(file).to.contain('style.color</b>');
     });
 
-    it('should support @HostListener', () => {
-        expect(aboutComponentFile).to.contain('<code>mouseup(mouseX');
-        expect(aboutComponentFile).to.contain("i>Arguments : </i><code>'$event.clientX");
+    it('should support @HostListener and multiple', () => {
+        expect(aboutComponentFile).to.contain(
+            "i>Arguments : </i><code>'$event.clientX' '$event.clientY'"
+        );
+
+        expect(doNothingDirectiveFile).to.contain(
+            `<code>@HostListener(&#x27;focus&#x27;, [&#x27;$event&#x27;])<br />@HostListener(&#x27;click&#x27;, [&#x27;$event&#x27;])<br /></code>`
+        );
     });
 
     it('should support extends for interface', () => {
@@ -675,7 +691,7 @@ describe('CLI simple generation - big app', () => {
     });
 
     it('should support Tuple types', () => {
-        expect(typeAliasesFile).to.contain('<code>[Number, Number]</code>');
+        expect(typeAliasesFile).to.contain('<code>[number, number]</code>');
         expect(typeAliasesFile).to.contain('[Todo, Todo]</a>');
     });
 
@@ -762,5 +778,23 @@ describe('CLI simple generation - big app', () => {
 
     it('correct supports JSdoc without comment for accessor', () => {
         expect(tidiClassFile).to.contain('b>emailAddress</b>');
+    });
+
+    it('correct supports ArrayType', () => {
+        expect(interfaceIDATAFile).to.contain('<code>[number, string, number[]]</code>');
+    });
+
+    it('correct supports ArrayType with spread', () => {
+        expect(interfaceIDATAFile).to.contain('<code>[string, string, boolean[]]</code>');
+    });
+
+    it('should support inheritance with abstract class', () => {
+        let file = read(distFolder + '/components/SonComponent.html');
+        expect(file).to.contain(
+            'href="../components/MotherComponent.html#source" target="_self" >MotherComponent:20'
+        );
+        expect(file).to.contain(
+            'href="../components/MotherComponent.html#source" target="_self" >MotherComponent:14'
+        );
     });
 });

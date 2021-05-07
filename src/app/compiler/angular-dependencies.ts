@@ -201,10 +201,7 @@ export class AngularDependencies extends FrameworkDependencies {
         let name = this.getSymboleName(node);
         let IO = this.getClassIO(file, srcFile, node, fileBody);
         let sourceCode = srcFile.getText();
-        let hash = crypto
-            .createHash('md5')
-            .update(sourceCode)
-            .digest('hex');
+        let hash = crypto.createHash('md5').update(sourceCode).digest('hex');
         let deps: any = {
             name,
             id: 'class-' + name + '-' + hash,
@@ -334,10 +331,7 @@ export class AngularDependencies extends FrameworkDependencies {
             }
             let parseNode = (file, srcFile, node, fileBody) => {
                 let sourceCode = srcFile.getText();
-                let hash = crypto
-                    .createHash('md5')
-                    .update(sourceCode)
-                    .digest('hex');
+                let hash = crypto.createHash('md5').update(sourceCode).digest('hex');
 
                 if (node.decorators) {
                     let classWithCustomDecorator = false;
@@ -461,6 +455,11 @@ export class AngularDependencies extends FrameworkDependencies {
                             }
                         } else if (this.isDirective(visitedDecorator)) {
                             if (props.length === 0) {
+                                // Fallback to Class if Directive has no properties -> Angular >= 9.x Support
+                                if (ts.isClassDeclaration(node)) {
+                                    this.processClass(node, file, srcFile, outputSymbols, fileBody);
+                                }
+
                                 return;
                             }
                             let directiveDeps = new DirectiveDepFactory(
@@ -612,6 +611,10 @@ export class AngularDependencies extends FrameworkDependencies {
                         }
                         if (!isIgnore(node)) {
                             outputSymbols.miscellaneous.typealiases.push(typeAliasDeps);
+                        }
+
+                        if (typeof infos.ignore === 'undefined') {
+                            this.debug(typeAliasDeps);
                         }
                     } else if (ts.isModuleDeclaration(node)) {
                         if (node.body) {
@@ -850,7 +853,7 @@ export class AngularDependencies extends FrameworkDependencies {
 
     private findExpressionByNameInExpressions(entryNode, name) {
         let result;
-        let loop = function(node, z) {
+        let loop = function (node, z) {
             if (node) {
                 if (node.expression && !node.expression.name) {
                     loop(node.expression, z);
@@ -873,7 +876,7 @@ export class AngularDependencies extends FrameworkDependencies {
         let that = this;
         let i = 0;
         let len = arg.length;
-        let loop = function(node, z) {
+        let loop = function (node, z) {
             if (node.body) {
                 if (node.body.statements && node.body.statements.length > 0) {
                     let j = 0;
@@ -893,7 +896,7 @@ export class AngularDependencies extends FrameworkDependencies {
     private parseDecorators(decorators, type: string): boolean {
         let result = false;
         if (decorators.length > 1) {
-            _.forEach(decorators, function(decorator: any) {
+            _.forEach(decorators, function (decorator: any) {
                 if (decorator.expression.expression) {
                     if (decorator.expression.expression.text === type) {
                         result = true;
